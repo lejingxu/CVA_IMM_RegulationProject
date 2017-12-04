@@ -63,6 +63,21 @@ def calculateExposure(V_df,switch_collateral,switch_downProv,collateral,D,lbda):
     if not (switch_collateral or switch_downProv):
         return np.maximum(V_df,0)
         
+    if switch_downProv:
+        # extract instantaneous default intensity lbda(t_i,t_(i+1))
+        lbda_inst = [lbda[i][0] for i in range(1,len(lbda),1)] 
+        terminationTime = np.where(lbda_inst>D)[0]
+        V_downProv = np.asarray(V_df)
+        if terminationTime!= []:
+            V_downProv[terminationTime[0]:] = 0
+        EE = np.maximum(V_downProv,0)
+        
+        if switch_collateral:
+            return np.maximum(np.minimum(EE,collateral),0)
+        else:
+            return EE
+    else:
+        return np.maximum(np.minimum(V_df,collateral),0)
 
         
 def calculateUniCVA(EE,P_OIS,X,lbda,rr):

@@ -147,7 +147,7 @@ net_uni_CVA_receiver = calculateNetUniCVA(CVA_uni_receiver,DVA_uni_receiver)
 print "Net Unilateral CVA as a payer for B is", net_uni_CVA_payer
 print "Net Unilateral CVA as a receiver for B is",net_uni_CVA_receiver
 
-
+'''
 ##### 4 For the receiver swap, graph the unilateral CVA, DVA, and net CVA 
 ##### against the interest rate model parameters $\sigma_r$ and $\kappa_2$ (two separate graphs)
 
@@ -216,7 +216,7 @@ for i in range(len(kappa2s)):
 
 
 ### plot    
-plt.figure(figsize=[12,8])
+plt.figure(figsize=[12,6])
 plt.subplot(1,2,1)
 plt.plot(sigma_rs,uniCVA_4s,sigma_rs,uniDVA_4s,sigma_rs,netCVA_4s)
 plt.title('Against $\sigma_r$')
@@ -229,7 +229,59 @@ plt.title('Against $\kappa_2$')
 plt.xlabel('$\kappa_2$')
 plt.legend(['CVA','DVA','Net CVA'])
 plt.show()
-    
+'''
+
+##### 6 with credit mitigants Repeat Exercise 1
+## a) with collateral
+switch_collateral = True
+collateral = 5000000.
+PVEE_payer_col,EE_payer_col = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_payer,switch_collateral,switch_downProv,collateral,D)
+PVEE_receiver_col,EE_receiver_col = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_receiver,switch_collateral,switch_downProv,collateral,D)
+#print "Payer",PVEE_payer
+#print "Receiver",PVEE_receiver
+
+plt.figure()
+plt.plot(ts,PVEE_receiver_col,ts,PVEE_payer_col)
+plt.xlabel('Time')
+plt.ylabel('PVEE')
+plt.title('PVEE with collateral')
+plt.legend(['Receiver','Payer'])
+plt.show()
+
+## b) with termination
+switch_collateral = False
+collateral = 0
+switch_downProv = True
+D = 0.0375
+PVEE_payer_down,EE_payer_down = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_payer,switch_collateral,switch_downProv,collateral,D)
+PVEE_receiver_down,EE_receiver_down = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_receiver,switch_collateral,switch_downProv,collateral,D)
+#print "Payer",PVEE_payer
+#print "Receiver",PVEE_receiver
+
+plt.figure()
+plt.plot(ts,PVEE_receiver_down,ts,PVEE_payer_down)
+plt.xlabel('Time')
+plt.ylabel('PVEE')
+plt.title('PVEE with Downgrade Provision')
+plt.legend(['Receiver','Payer'])
+plt.show()
+
+## c) with both collateral and termination
+switch_collateral = True
+collateral = 5000000.
+PVEE_payer_both,EE_payer_both = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_payer,switch_collateral,switch_downProv,collateral,D)
+PVEE_receiver_both,EE_receiver_both = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_receiver,switch_collateral,switch_downProv,collateral,D)
+#print "Payer",PVEE_payer
+#print "Receiver",PVEE_receiver
+
+plt.figure()
+plt.plot(ts,PVEE_receiver_both,ts,PVEE_payer_both)
+plt.xlabel('Time')
+plt.ylabel('PVEE')
+plt.title('PVEE with both Collateral and Downgrade Provision')
+plt.legend(['Receiver','Payer'])
+plt.show()
+
 
 
 ##### 7 Compute the bilateral CVA,DVA,net CVA for the naked swap position
