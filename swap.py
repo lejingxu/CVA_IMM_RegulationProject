@@ -39,7 +39,8 @@ def priceSwap(swap, payerOrReceiver, P_OIS, P_LIBOR, i, ts, Tis, sim_freq) :
     return:
         price:    value of swap at time ts[i]
     '''
-    c = swap.coupon * swap.notional/swap.freq # fixed coupon
+    #c = swap.coupon * swap.notional/swap.freq # fixed coupon
+    c = swap.coupon/swap.freq
     dT = Tis[1]-Tis[0]
     first_stub = np.where(Tis>=ts[i])[0][0]
     floating = []
@@ -65,6 +66,7 @@ def priceSwap(swap, payerOrReceiver, P_OIS, P_LIBOR, i, ts, Tis, sim_freq) :
     
 def priceSwap_new(swap, payerOrReceiver, P_OIS, P_LIBOR, i, ts, sim_freq) :
     '''
+    *** DO NOT USE THIS FUNCTION. NOT FIXED. USE priceSwap
     Args:
         swap:     a swap object
         payerOrReceiver: string type, 'payer' or 'receiver'

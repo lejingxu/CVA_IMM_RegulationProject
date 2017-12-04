@@ -5,6 +5,7 @@ Created on Sat Dec 02 21:54:28 2017
 @author: Lejing
 """
 import numpy as np
+import matplotlib.pyplot as plt
 
 from swap import Swap,priceSwap
 from marketSetup import simulateOIS,simulateSurvivalProb
@@ -63,7 +64,7 @@ swap.__str__()
 Tis = np.arange(1./freq,maturity+1e-6,1./freq)
 ts = np.arange(1./sim_freq,maturity+1e-6,1./sim_freq)
 
-num_simulation = 2
+num_simulation = 100
 
 prices_payer=[]
 prices_receiver = []
@@ -95,8 +96,8 @@ for num in range(num_simulation):
     lbdaBs.append(lbdaB)
     lbdaCs.append(lbdaC)
     
-print "payer",np.average(prices_payer,axis=0)
-print prices_payer
+#print "payer",np.average(prices_payer,axis=0)
+#print prices_payer
     
 switch_collateral = False
 switch_downProv = False
@@ -106,5 +107,14 @@ PVEE_payer,EE_payer = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_payer,switch_colla
 PVEE_receiver,EE_receiver = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_receiver,switch_collateral,switch_downProv,collateral,D)
 print "Payer",PVEE_payer
 print "Receiver",PVEE_receiver
+
+plt.plot(ts,PVEE_receiver,ts,PVEE_payer)
+plt.xlabel('Time')
+plt.ylabel('PVEE')
+plt.title('PVEE')
+plt.legend(['Receiver','Payer'])
+plt.show()
+
+
     
 print "done"

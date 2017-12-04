@@ -10,10 +10,12 @@ import numpy as np
 def calculatePVEE(lbda,P_OIS,X,V_df,switch_collateral,switch_downProv,collateral,D):
     '''
     Args:
-        lbda:              default intensity, length num_simulation
-        P_OIS:             discount bound price using OIS, length num_simulation
+        ** Note that all simulated variables are of size num_simulation, each 
+        ** element is the variable for one simulation
+        lbda:              default intensity
+        P_OIS:             discount bound price using OIS
         X:                 survival probability
-        V_df:              default-free value of the portfolio, length num_simulation
+        V_df:              default-free value of the portfolio
         switch_collateral: True or False for collateral agreement
         switch_downProv:   True or False for downgrade provision
         collateral:        collateral threshold
@@ -45,8 +47,8 @@ def calculatePVEE(lbda,P_OIS,X,V_df,switch_collateral,switch_downProv,collateral
         pvee = numerator/denominator
         ee = numerator_ee/denominator
         
-    PVEE.append(pvee)
-    EE.append(ee)
+        PVEE.append(pvee)
+        EE.append(ee)
     
     return PVEE,EE
 

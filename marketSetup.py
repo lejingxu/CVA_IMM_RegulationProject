@@ -93,6 +93,9 @@ def simulateOIS(rho_x, sigma1, sigma2, kappa1, kappa2, sim_freq, maturity, f0_OI
     
     
 def simulateOIS_new(rho_x, sigma1, sigma2, kappa1, kappa2, sim_freq, maturity, f0_OIS, spread,ts,wt):
+    '''
+    *** DO NOT USE THIS FUNCTION. NOT FIXED. USE simulateOIS.
+    '''
     
     P_OIS = []
     P_LIBOR = []
