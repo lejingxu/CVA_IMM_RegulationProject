@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from swap import Swap,priceSwap
 from marketSetup import simulateOIS,simulateSurvivalProb
-from valuationAdjustment import calculatePVEE
+from valuationAdjustment import calculatePVEE,calculateUniCVA
 
 
 num_simulation = 50000
@@ -69,7 +69,7 @@ swap.__str__()
 Tis = np.arange(1./freq,maturity+1e-6,1./freq)
 ts = np.arange(1./sim_freq,maturity+1e-6,1./sim_freq)
 
-#num_simulation = 100
+num_simulation = 20
 
 prices_payer=[]
 prices_receiver = []
@@ -123,5 +123,7 @@ plt.show()
 
 CVA_uni_payer = calculateUniCVA(EE_payer,P_OISs,X_Cs,lbdaCs,rr)
 CVA_uni_receiver = calculateUniCVA(EE_receiver,P_OISs,X_Cs,lbdaCs,rr)
+print "Unilateral CVA as a payer for B is", CVA_uni_payer
+print "Unilateral CVA as a receiver for B is",CVA_uni_receiver
     
 print "done"

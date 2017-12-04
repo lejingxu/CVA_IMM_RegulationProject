@@ -66,5 +66,5 @@ def calculateExposure(V_df,switch_collateral,switch_downProv,collateral,D,lbda):
 
         
 def calculateUniCVA(EE,P_OIS,X,lbda,rr):
-    CVA = (1.-rr)*(np.sum(EE.dot(P_OIS[0][0]).dot(X[0][0]).dot(lbda[0][0])))
+    CVA = (1.-rr)*np.sum(np.multiply(np.multiply(EE,P_OIS[0][0]),np.multiply(X[0][0],lbda[0][0])))
     return CVA
