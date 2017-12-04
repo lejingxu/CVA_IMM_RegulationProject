@@ -6,10 +6,14 @@ Created on Sat Dec 02 21:54:28 2017
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import fmt
+import pandas as pd
 
 from swap import Swap,priceSwap
 from marketSetup import simulateOIS,simulateSurvivalProb
-from valuationAdjustment import calculatePVEE,calculateUniCVA,calculateUniDVA,calculateNetUniCVA
+from valuationAdjustment import calculatePVEE,calculateUniCVA,calculateUniDVA,\
+                        calculateNetUniCVA,calculateBiCVA,calculateBiDVA,\
+                        calculateNetBiCVA
 
 
 num_simulation = 50000
@@ -181,7 +185,7 @@ for i in range(len(sigma_rs)):
     netCVA_4s.append(netCVA)
 
 ### kappa_2
-kappa2s = np.arange(0,0.5,0.01)
+kappa2s = np.arange(0.01,0.5,0.01)
 uniCVA_4k = []
 uniDVA_4k = []
 netCVA_4k = []
@@ -227,5 +231,16 @@ plt.legend(['CVA','DVA','Net CVA'])
 plt.show()
     
 
-    
+
+##### 7 Compute the bilateral CVA,DVA,net CVA for the naked swap position
+bi_CVA_receiver = calculateBiCVA(EE_receiver,P_OISs,X_Cs,lbdaCs,rr,X_Bs)
+bi_DVA_receiver = calculateBiDVA(EE_receiver,P_OISs,X_Cs,lbdaBs,rr,X_Bs)
+net_bi_CVA_receiver = calculateNetBiCVA(bi_CVA_receiver,bi_DVA_receiver)
+bilateral = [bi_CVA_receiver,bi_DVA_receiver,net_bi_CVA_receiver]
+unilateral = [CVA_uni_receiver,DVA_uni_receiver,net_uni_CVA_receiver]
+
+df = pd.DataFrame(np.asarray([unilateral,bilateral]),index = ['Unilateral','Bilateral'],columns = ['CVA','DVA','Net CVA'])
+fmt.displayDF(df)
+
+
 print "done"
