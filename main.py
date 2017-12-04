@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from swap import Swap,priceSwap
 from marketSetup import simulateOIS,simulateSurvivalProb
-from valuationAdjustment import calculatePVEE,calculateUniCVA
+from valuationAdjustment import calculatePVEE,calculateUniCVA,calculateUniDVA,calculateNetUniCVA
 
 
 num_simulation = 50000
@@ -79,10 +79,12 @@ X_Bs = []
 X_Cs = []
 lbdaBs = []
 lbdaCs = []
+wts = []
 
 for num in range(num_simulation):
     # simulate correlated 4-D brownian motion
     wt = chol.dot(np.random.normal(0,1./sim_freq,(4,sim_freq*maturity)))
+    wts.append(wt)
     P_OIS, P_LIBOR = simulateOIS(rho_x, sigma1, sigma2, kappa1, kappa2, sim_freq, maturity, f0_OIS, spread,ts,Tis,wt)
     X_B,X_C,lbdaB,lbdaC = simulateSurvivalProb(lbda0_B,lbda0_C,ts,sigmaB,kappaB,sigmaC,kappaC,wt)
     price_one_path=[]
@@ -103,27 +105,127 @@ for num in range(num_simulation):
     
 #print "payer",np.average(prices_payer,axis=0)
 #print prices_payer
-    
+
+##### 1 Plot $PVEE(T)$ as seen from B as payer and receiver respectively
 switch_collateral = False
 switch_downProv = False
 collateral = 0
 D = 0
 PVEE_payer,EE_payer = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_payer,switch_collateral,switch_downProv,collateral,D)
 PVEE_receiver,EE_receiver = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_receiver,switch_collateral,switch_downProv,collateral,D)
-print "Payer",PVEE_payer
-print "Receiver",PVEE_receiver
+#print "Payer",PVEE_payer
+#print "Receiver",PVEE_receiver
 
 plt.figure()
-plt.plot(ts,PVEE_receiver,ts,PVEE_payer,ts,EE_payer,ts,EE_receiver)
+plt.plot(ts,PVEE_receiver,ts,PVEE_payer)
 plt.xlabel('Time')
 plt.ylabel('PVEE')
 plt.title('PVEE')
-plt.legend(['Receiver','Payer','EE_p','EE_R'])
+plt.legend(['Receiver','Payer'])
 plt.show()
 
+
+##### 2 The unilateral CVA from the perspective of B for both payer and receiver swap
 CVA_uni_payer = calculateUniCVA(EE_payer,P_OISs,X_Cs,lbdaCs,rr)
 CVA_uni_receiver = calculateUniCVA(EE_receiver,P_OISs,X_Cs,lbdaCs,rr)
 print "Unilateral CVA as a payer for B is", CVA_uni_payer
 print "Unilateral CVA as a receiver for B is",CVA_uni_receiver
+
+
+##### 3 The unilateral DVA from the perspective of B for both payer and receiver swap, net unilateral CVA
+DVA_uni_payer = calculateUniDVA(EE_payer,P_OISs,X_Bs,lbdaBs,rr)
+DVA_uni_receiver = calculateUniDVA(EE_receiver,P_OISs,X_Bs,lbdaBs,rr)
+print "Unilateral DVA as a payer for B is", DVA_uni_payer
+print "Unilateral DVA as a receiver for B is",DVA_uni_receiver
+
+net_uni_CVA_payer = calculateNetUniCVA(CVA_uni_payer,DVA_uni_payer)
+net_uni_CVA_receiver = calculateNetUniCVA(CVA_uni_receiver,DVA_uni_receiver)
+print "Net Unilateral CVA as a payer for B is", net_uni_CVA_payer
+print "Net Unilateral CVA as a receiver for B is",net_uni_CVA_receiver
+
+
+##### 4 For the receiver swap, graph the unilateral CVA, DVA, and net CVA 
+##### against the interest rate model parameters $\sigma_r$ and $\kappa_2$ (two separate graphs)
+
+### sigma_r
+sigma_rs = np.arange(0,0.5,0.01)
+num_sim = 20
+uniCVA_4s = []
+uniDVA_4s = []
+netCVA_4s = []
+for i in range(len(sigma_rs)):
+    sigma_l_4 = c * sigma_rs[i]
+    sigma1_4 = sigma_l_4
+    sigma2_4 = nu*sigma1_4
+    P_OISs_4 = []
+    #P_LIBORs_4 = []
+    prices_receiver_4 = []
+    for j in range(num_sim):
+        P_OIS, P_LIBOR = simulateOIS(rho_x, sigma1_4, sigma2_4, kappa1, kappa2, sim_freq, maturity, f0_OIS, spread,ts,Tis,wts[j])
+        #X_B,X_C,lbdaB,lbdaC = simulateSurvivalProb(lbda0_B,lbda0_C,ts,sigmaB,kappaB,sigmaC,kappaC,wt)
+        price_one_path=[]
+        for t in range(maturity*sim_freq):
+            p =priceSwap(swap, 'receiver', P_OIS, P_LIBOR, t, ts, Tis,sim_freq)
+            price_one_path.append(p)
+        
+        prices_receiver_4.append(price_one_path)
+        P_OISs_4.append(P_OIS)
+        #P_LIBORs_4.append(P_LIBOR)
+        
+    PVEE_4,EE_4 = calculatePVEE(lbdaCs,P_OISs_4,X_Cs,prices_receiver_4,switch_collateral,switch_downProv,collateral,D)
+    uniCVA = calculateUniCVA(EE_4,P_OISs_4,X_Cs,lbdaCs,rr)
+    uniDVA = calculateUniDVA(EE_4,P_OISs_4,X_Bs,lbdaBs,rr)
+    netCVA = calculateNetUniCVA(uniCVA,uniDVA)
+    uniCVA_4s.append(uniCVA)
+    uniDVA_4s.append(uniDVA)
+    netCVA_4s.append(netCVA)
+
+### kappa_2
+kappa2s = np.arange(0,0.5,0.01)
+uniCVA_4k = []
+uniDVA_4k = []
+netCVA_4k = []
+for i in range(len(kappa2s)):
+    
+    P_OISs_4k = []
+    #P_LIBORs_4k = []
+    prices_receiver_4k = []
+    for j in range(num_sim):
+        P_OIS, P_LIBOR = simulateOIS(rho_x, sigma1, sigma2, kappa1, kappa2s[i], sim_freq, maturity, f0_OIS, spread,ts,Tis,wts[j])
+        #X_B,X_C,lbdaB,lbdaC = simulateSurvivalProb(lbda0_B,lbda0_C,ts,sigmaB,kappaB,sigmaC,kappaC,wt)
+        price_one_path=[]
+        for t in range(maturity*sim_freq):
+            p =priceSwap(swap, 'receiver', P_OIS, P_LIBOR, t, ts, Tis,sim_freq)
+            price_one_path.append(p)
+        
+        prices_receiver_4k.append(price_one_path)
+        P_OISs_4k.append(P_OIS)
+        #P_LIBORs_4k.append(P_LIBOR)
+        
+    PVEE_4k,EE_4k = calculatePVEE(lbdaCs,P_OISs_4k,X_Cs,prices_receiver_4k,switch_collateral,switch_downProv,collateral,D)
+    uniCVA = calculateUniCVA(EE_4k,P_OISs_4k,X_Cs,lbdaCs,rr)
+    uniDVA = calculateUniDVA(EE_4k,P_OISs_4k,X_Bs,lbdaBs,rr)
+    netCVA = calculateNetUniCVA(uniCVA,uniDVA)
+    uniCVA_4k.append(uniCVA)
+    uniDVA_4k.append(uniDVA)
+    netCVA_4k.append(netCVA)
+
+
+### plot    
+plt.figure(figsize=[12,8])
+plt.subplot(1,2,1)
+plt.plot(sigma_rs,uniCVA_4s,sigma_rs,uniDVA_4s,sigma_rs,netCVA_4s)
+plt.title('Against $\sigma_r$')
+plt.xlabel('$\sigma_r$')
+plt.legend(['CVA','DVA','Net CVA'])
+
+plt.subplot(1,2,2)
+plt.plot(kappa2s,uniCVA_4k,kappa2s,uniDVA_4k,kappa2s,netCVA_4k)
+plt.title('Against $\kappa_2$')
+plt.xlabel('$\kappa_2$')
+plt.legend(['CVA','DVA','Net CVA'])
+plt.show()
+    
+
     
 print "done"

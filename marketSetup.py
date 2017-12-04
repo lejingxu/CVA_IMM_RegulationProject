@@ -50,7 +50,7 @@ def simulateXt(rho_x, sigma1, sigma2, kappa1, kappa2, maturity,ts,wt):
         integral_aa = np.asarray([[integral_aa11,integral_aa12],[integral_aa12,integral_aa22]])
         
         y = B.dot(integral_aa).dot(B)
-        wi = np.array([wt[0][i],wt[1][i]])
+        wi = np.array([wt[2][i],wt[3][i]])
         
         x = x + (y.dot(np.ones(2))-np.diag([kappa1,kappa2]).dot(x))*dt+np.diag([sigma1,sigma2]).dot(wi)
         xt.append(x)

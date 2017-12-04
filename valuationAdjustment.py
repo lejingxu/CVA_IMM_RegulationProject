@@ -66,5 +66,21 @@ def calculateExposure(V_df,switch_collateral,switch_downProv,collateral,D,lbda):
 
         
 def calculateUniCVA(EE,P_OIS,X,lbda,rr):
+    '''
+    Args:
+        ** Note that all simulated variables are of size num_simulation, each 
+        ** element is the variable for one simulation
+        lbda:              default intensity
+        P_OIS:             discount bound price using OIS
+        X:                 survival probability
+        rr:                recovery rate
+        EE:                expected exposure
+    '''
     CVA = (1.-rr)*np.sum(np.multiply(np.multiply(EE,P_OIS[0][0]),np.multiply(X[0][0],lbda[0][0])))
     return CVA
+    
+def calculateUniDVA(EE,P_OIS,X,lbda,rr):
+    return calculateUniCVA(EE,P_OIS,X,lbda,rr)
+    
+def calculateNetUniCVA(uniCVA,uniDVA):
+    return uniDVA - uniCVA
