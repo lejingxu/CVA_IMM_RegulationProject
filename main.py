@@ -57,6 +57,11 @@ corr = np.array([[1., rho_BC, rho_B1, rho_B2],\
                  [rho_B2, rho_C2, rho_x, 1.]])
 chol = np.linalg.cholesky(corr)
 
+### Credit Mitigation
+D = 0.0375   # intensity threshold for downgrade provision
+collateral = 5000000.
+rr = 0.4    # recovery rate
+
 
 swap = Swap(maturity, coupon, freq, notional)
 swap.__str__()
@@ -64,7 +69,7 @@ swap.__str__()
 Tis = np.arange(1./freq,maturity+1e-6,1./freq)
 ts = np.arange(1./sim_freq,maturity+1e-6,1./sim_freq)
 
-num_simulation = 100
+#num_simulation = 100
 
 prices_payer=[]
 prices_receiver = []
@@ -108,13 +113,15 @@ PVEE_receiver,EE_receiver = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_receiver,swi
 print "Payer",PVEE_payer
 print "Receiver",PVEE_receiver
 
-plt.plot(ts,PVEE_receiver,ts,PVEE_payer)
+plt.figure()
+plt.plot(ts,PVEE_receiver,ts,PVEE_payer,ts,EE_payer,ts,EE_receiver)
 plt.xlabel('Time')
 plt.ylabel('PVEE')
 plt.title('PVEE')
-plt.legend(['Receiver','Payer'])
+plt.legend(['Receiver','Payer','EE_p','EE_R'])
 plt.show()
 
-
+CVA_uni_payer = calculateUniCVA(EE_payer,P_OISs,X_Cs,lbdaCs,rr)
+CVA_uni_receiver = calculateUniCVA(EE_receiver,P_OISs,X_Cs,lbdaCs,rr)
     
 print "done"

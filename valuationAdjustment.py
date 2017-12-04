@@ -62,3 +62,9 @@ def calculateExposure(V_df,switch_collateral,switch_downProv,collateral,D,lbda):
     '''
     if not (switch_collateral or switch_downProv):
         return np.maximum(V_df,0)
+        
+
+        
+def calculateUniCVA(EE,P_OIS,X,lbda,rr):
+    CVA = (1.-rr)*(np.sum(EE.dot(P_OIS[0][0]).dot(X[0][0]).dot(lbda[0][0])))
+    return CVA

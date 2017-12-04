@@ -53,7 +53,7 @@ def priceSwap(swap, payerOrReceiver, P_OIS, P_LIBOR, i, ts, Tis, sim_freq) :
     # then add the rest floating payments using Expectation
     for j in range(1,len(P_LIBOR[i+1]),1):
         floating.append(float((P_LIBOR[i+1][j-1]/P_LIBOR[i+1][j]-1.)/dT))
-
+        
     if payerOrReceiver == 'payer':
         net_payment = np.asarray(floating) - c
     elif payerOrReceiver == 'receiver':
