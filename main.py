@@ -147,7 +147,7 @@ net_uni_CVA_receiver = calculateNetUniCVA(CVA_uni_receiver,DVA_uni_receiver)
 print "Net Unilateral CVA as a payer for B is", net_uni_CVA_payer
 print "Net Unilateral CVA as a receiver for B is",net_uni_CVA_receiver
 
-'''
+
 ##### 4 For the receiver swap, graph the unilateral CVA, DVA, and net CVA 
 ##### against the interest rate model parameters $\sigma_r$ and $\kappa_2$ (two separate graphs)
 
@@ -229,7 +229,71 @@ plt.title('Against $\kappa_2$')
 plt.xlabel('$\kappa_2$')
 plt.legend(['CVA','DVA','Net CVA'])
 plt.show()
-'''
+
+
+##### 5 correlations that control wrong- and right-way risk
+param = np.arange(-1.,1.,0.05)
+rhos = np.array([rho_Bf, rho_Cf,rho_BC,rho_Br, rho_Cr])
+all_rhos = []
+CVAs = []
+num_sim = 10
+for i in range(len(rhos)):
+    rhos = np.array([rho_Bf, rho_Cf,rho_BC,rho_Br, rho_Cr])
+    rho_this = []
+    CVA_this = []
+    for tester in param:
+        rhos[i] = tester
+        rho_B1_t = rhos[0]  # corr b/w lbdaB and x1
+        rho_C1_t = rhos[1]   # corr b/w lbdaC and x1
+        rho_B2_t = rhos[3]*np.sqrt(nu*nu+1.+2*rho_x*nu)-nu*rho_B1_t   # corr b/w lbdaB and x2
+        rho_C2_t = rhos[4]*np.sqrt(nu*nu+1.+2*rho_x*nu)-nu*rho_C1_t   # corr b/w lbdaC and x2
+
+        ### correlation matrix among lbdaB,lbdaC,x1,x2 for simulation
+        corr = np.array([[1., rhos[2], rho_B1_t, rho_B2_t],\
+                 [rhos[2], 1., rho_C1_t, rho_C2_t],\
+                 [rho_B1_t, rho_C1_t, 1., rho_x],\
+                 [rho_B2_t, rho_C2_t, rho_x, 1.]])
+        if np.all(np.linalg.eigvals(corr) >= 0):# make sure corr is positive semi-definite
+            chol = np.linalg.cholesky(corr)
+            rho_this.append(tester)
+            prices_receiver_t = []
+            P_OISs_t = []
+            X_Cs_t = []
+            lbdaCs_t = []
+            for num in range(num_sim):
+                # simulate correlated 4-D brownian motion
+                wt = chol.dot(np.random.normal(0,1./sim_freq,(4,sim_freq*maturity)))
+                P_OIS, P_LIBOR = simulateOIS(rho_x, sigma1, sigma2, kappa1, kappa2, sim_freq, maturity, f0_OIS, spread,ts,Tis,wt)
+                X_B,X_C,lbdaB,lbdaC = simulateSurvivalProb(lbda0_B,lbda0_C,ts,sigmaB,kappaB,sigmaC,kappaC,wt)
+                price_one_path=[]
+                for j in range(maturity*sim_freq):
+                    p =priceSwap(swap, 'receiver', P_OIS, P_LIBOR, j, ts, Tis,sim_freq)
+                    price_one_path.append(p)
+        
+                prices_receiver_t.append(price_one_path)
+                P_OISs_t.append(P_OIS)
+                X_Cs_t.append(X_C)
+                lbdaCs_t.append(lbdaC)
+
+            PVEE_receiver,EE_receiver = calculatePVEE(lbdaCs_t,P_OISs_t,X_Cs,prices_receiver_t,switch_collateral,switch_downProv,collateral,D)
+            CVA_uni_receiver = calculateUniCVA(EE_receiver,P_OISs_t,X_Cs_t,lbdaCs_t,rr)
+            CVA_this.append(CVA_uni_receiver)
+    all_rhos.append(rho_this)
+    CVAs.append(CVA_this)
+    
+## plot
+titles = ['$\rho_{Bforward}$', '$\rho_{Cforward}$','$\rho_BC$','$\rho_{Br}$', '$\rho_{Cr}$']
+plt.figure(figsize=[12,18])
+for i in range(len(all_rhos)):
+    plt.subplot(3,2,i+1)
+    plt.plot(all_rhos[i],CVAs[i])
+    plt.title(titles[i])
+    plt.ylabel('Unilateral CVA')
+    plt.xlabel(titles[i])
+    
+plt.show()
+
+
 
 ##### 6 with credit mitigants Repeat Exercise 1
 ## a) with collateral
@@ -240,13 +304,14 @@ PVEE_receiver_col,EE_receiver_col = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_rece
 #print "Payer",PVEE_payer
 #print "Receiver",PVEE_receiver
 
-plt.figure()
-plt.plot(ts,PVEE_receiver_col,ts,PVEE_payer_col)
+plt.figure(figsize=[12,12])
+plt.subplot(2,2,1)
+plt.plot(ts,PVEE_receiver_col,ts,PVEE_payer_col,ts,PVEE_receiver,ts,PVEE_payer)
 plt.xlabel('Time')
 plt.ylabel('PVEE')
 plt.title('PVEE with collateral')
-plt.legend(['Receiver','Payer'])
-plt.show()
+plt.legend(['Receiver','Payer','E1 Receiver','E1 Payer'],loc='best')
+
 
 ## b) with termination
 switch_collateral = False
@@ -258,13 +323,13 @@ PVEE_receiver_down,EE_receiver_down = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_re
 #print "Payer",PVEE_payer
 #print "Receiver",PVEE_receiver
 
-plt.figure()
-plt.plot(ts,PVEE_receiver_down,ts,PVEE_payer_down)
+
+plt.subplot(2,2,2)
+plt.plot(ts,PVEE_receiver_down,ts,PVEE_payer_down,ts,PVEE_receiver,ts,PVEE_payer)
 plt.xlabel('Time')
 plt.ylabel('PVEE')
 plt.title('PVEE with Downgrade Provision')
-plt.legend(['Receiver','Payer'])
-plt.show()
+plt.legend(['Receiver','Payer','E1 Receiver','E1 Payer'],loc='best')
 
 ## c) with both collateral and termination
 switch_collateral = True
@@ -274,13 +339,14 @@ PVEE_receiver_both,EE_receiver_both = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_re
 #print "Payer",PVEE_payer
 #print "Receiver",PVEE_receiver
 
-plt.figure()
-plt.plot(ts,PVEE_receiver_both,ts,PVEE_payer_both)
+plt.subplot(2,2,3)
+plt.plot(ts,PVEE_receiver_both,ts,PVEE_payer_both,ts,PVEE_receiver,ts,PVEE_payer)
 plt.xlabel('Time')
 plt.ylabel('PVEE')
 plt.title('PVEE with both Collateral and Downgrade Provision')
-plt.legend(['Receiver','Payer'])
+plt.legend(['Receiver','Payer','E1 Receiver','E1 Payer'],loc='best')
 plt.show()
+
 
 
 
