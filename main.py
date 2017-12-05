@@ -73,7 +73,7 @@ swap.__str__()
 Tis = np.arange(1./freq,maturity+1e-6,1./freq)
 ts = np.arange(1./sim_freq,maturity+1e-6,1./sim_freq)
 
-num_simulation = 20
+num_simulation = 100
 
 prices_payer=[]
 prices_receiver = []
@@ -120,15 +120,22 @@ PVEE_receiver,EE_receiver = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_receiver,swi
 #print "Payer",PVEE_payer
 #print "Receiver",PVEE_receiver
 
-plt.figure()
-plt.plot(ts,PVEE_receiver,ts,PVEE_payer)
+plt.figure(figsize=[12,6])
+plt.subplot(1,2,1)
+plt.plot(ts,PVEE_receiver)
 plt.xlabel('Time')
 plt.ylabel('PVEE')
-plt.title('PVEE')
-plt.legend(['Receiver','Payer'])
+plt.title('PVEE Receiver')
+
+plt.subplot(1,2,2)
+plt.plot(ts,PVEE_payer)
+plt.xlabel('Time')
+plt.ylabel('PVEE')
+plt.title('PVEE Payer')
+
 plt.show()
 
-
+'''
 ##### 2 The unilateral CVA from the perspective of B for both payer and receiver swap
 CVA_uni_payer = calculateUniCVA(EE_payer,P_OISs,X_Cs,lbdaCs,rr)
 CVA_uni_receiver = calculateUniCVA(EE_receiver,P_OISs,X_Cs,lbdaCs,rr)
@@ -304,13 +311,20 @@ PVEE_receiver_col,EE_receiver_col = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_rece
 #print "Payer",PVEE_payer
 #print "Receiver",PVEE_receiver
 
-plt.figure(figsize=[12,12])
-plt.subplot(2,2,1)
-plt.plot(ts,PVEE_receiver_col,ts,PVEE_payer_col,ts,PVEE_receiver,ts,PVEE_payer)
+plt.figure(figsize=[12,18])
+plt.subplot(3,2,1)
+plt.plot(ts,PVEE_receiver_col,ts,PVEE_receiver)
 plt.xlabel('Time')
 plt.ylabel('PVEE')
-plt.title('PVEE with collateral')
-plt.legend(['Receiver','Payer','E1 Receiver','E1 Payer'],loc='best')
+plt.title('PVEE with collateral--Receiver')
+plt.legend(['Receiver','E1 Receiver'],loc='best')
+
+plt.subplot(3,2,2)
+plt.plot(ts,PVEE_payer_col,ts,PVEE_payer)
+plt.xlabel('Time')
+plt.ylabel('PVEE')
+plt.title('PVEE with collateral--Payer')
+plt.legend(['Payer','E1 Payer'],loc='best')
 
 
 ## b) with termination
@@ -324,12 +338,19 @@ PVEE_receiver_down,EE_receiver_down = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_re
 #print "Receiver",PVEE_receiver
 
 
-plt.subplot(2,2,2)
-plt.plot(ts,PVEE_receiver_down,ts,PVEE_payer_down,ts,PVEE_receiver,ts,PVEE_payer)
+plt.subplot(3,2,3)
+plt.plot(ts,PVEE_receiver_down,ts,PVEE_receiver)
 plt.xlabel('Time')
 plt.ylabel('PVEE')
-plt.title('PVEE with Downgrade Provision')
-plt.legend(['Receiver','Payer','E1 Receiver','E1 Payer'],loc='best')
+plt.title('PVEE with Downgrade Provision--Receiver')
+plt.legend(['Receiver','E1 Receiver'],loc='best')
+
+plt.subplot(3,2,4)
+plt.plot(ts,PVEE_payer_down,ts,PVEE_payer)
+plt.xlabel('Time')
+plt.ylabel('PVEE')
+plt.title('PVEE with Downgrade Provision--Payer')
+plt.legend(['Payer','E1 Payer'],loc='best')
 
 ## c) with both collateral and termination
 switch_collateral = True
@@ -339,12 +360,19 @@ PVEE_receiver_both,EE_receiver_both = calculatePVEE(lbdaCs,P_OISs,X_Cs,prices_re
 #print "Payer",PVEE_payer
 #print "Receiver",PVEE_receiver
 
-plt.subplot(2,2,3)
-plt.plot(ts,PVEE_receiver_both,ts,PVEE_payer_both,ts,PVEE_receiver,ts,PVEE_payer)
+plt.subplot(3,2,5)
+plt.plot(ts,PVEE_receiver_both,ts,PVEE_receiver)
 plt.xlabel('Time')
 plt.ylabel('PVEE')
-plt.title('PVEE with both Collateral and Downgrade Provision')
-plt.legend(['Receiver','Payer','E1 Receiver','E1 Payer'],loc='best')
+plt.title('PVEE with both Collateral and Downgrade Provision--Receiver')
+plt.legend(['Receiver','E1 Receiver'],loc='best')
+
+plt.subplot(3,2,6)
+plt.plot(ts,PVEE_payer_both,ts,PVEE_payer)
+plt.xlabel('Time')
+plt.ylabel('PVEE')
+plt.title('PVEE with both Collateral and Downgrade Provision--Payer')
+plt.legend(['Payer','E1 Payer'],loc='best')
 plt.show()
 
 
@@ -362,3 +390,4 @@ fmt.displayDF(df)
 
 
 print "done"
+'''
