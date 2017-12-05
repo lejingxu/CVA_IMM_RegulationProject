@@ -98,7 +98,7 @@ def calculateUniDVA(EE,P_OIS,X,lbda,rr):
     return calculateUniCVA(EE,P_OIS,X,lbda,rr)
     
 def calculateNetUniCVA(uniCVA,uniDVA):
-    return uniDVA - uniCVA
+    return uniCVA - uniDVA
     
 def calculateBiCVA(EE,P_OIS,X,lbda,rr,X_self):
     biCVA = (1.-rr)*np.sum(np.multiply(np.multiply(np.multiply(EE,X_self[0][0]),P_OIS[0][0]),np.multiply(X[0][0],lbda[0][0])))
