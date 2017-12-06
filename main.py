@@ -73,7 +73,7 @@ swap.__str__()
 Tis = np.arange(1./freq,maturity+1e-6,1./freq)
 ts = np.arange(1./sim_freq,maturity+1e-6,1./sim_freq)
 
-num_simulation = 100
+num_simulation = 20
 
 prices_payer=[]
 prices_receiver = []
@@ -87,7 +87,7 @@ wts = []
 
 for num in range(num_simulation):
     # simulate correlated 4-D brownian motion
-    wt = chol.dot(np.random.normal(0,1./sim_freq,(4,sim_freq*maturity)))
+    wt = chol.dot(np.random.normal(0,1./np.sqrt(sim_freq),(4,sim_freq*maturity)))
     wts.append(wt)
     P_OIS, P_LIBOR = simulateOIS(rho_x, sigma1, sigma2, kappa1, kappa2, sim_freq, maturity, f0_OIS, spread,ts,Tis,wt)
     X_B,X_C,lbdaB,lbdaC = simulateSurvivalProb(lbda0_B,lbda0_C,ts,sigmaB,kappaB,sigmaC,kappaC,wt)
@@ -109,6 +109,7 @@ for num in range(num_simulation):
     
 #print "payer",np.average(prices_payer,axis=0)
 #print prices_payer
+
 
 ##### 1 Plot $PVEE(T)$ as seen from B as payer and receiver respectively
 switch_collateral = False
@@ -134,8 +135,9 @@ plt.ylabel('PVEE')
 plt.title('PVEE Payer')
 
 plt.show()
-
+print "done"
 '''
+
 ##### 2 The unilateral CVA from the perspective of B for both payer and receiver swap
 CVA_uni_payer = calculateUniCVA(EE_payer,P_OISs,X_Cs,lbdaCs,rr)
 CVA_uni_receiver = calculateUniCVA(EE_receiver,P_OISs,X_Cs,lbdaCs,rr)
@@ -269,7 +271,7 @@ for i in range(len(rhos)):
             lbdaCs_t = []
             for num in range(num_sim):
                 # simulate correlated 4-D brownian motion
-                wt = chol.dot(np.random.normal(0,1./sim_freq,(4,sim_freq*maturity)))
+                wt = chol.dot(np.random.normal(0,1./np.sqrt(sim_freq),(4,sim_freq*maturity)))
                 P_OIS, P_LIBOR = simulateOIS(rho_x, sigma1, sigma2, kappa1, kappa2, sim_freq, maturity, f0_OIS, spread,ts,Tis,wt)
                 X_B,X_C,lbdaB,lbdaC = simulateSurvivalProb(lbda0_B,lbda0_C,ts,sigmaB,kappaB,sigmaC,kappaC,wt)
                 price_one_path=[]
