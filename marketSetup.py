@@ -5,6 +5,7 @@ Created on Sat Dec 02 13:47:25 2017
 @author: Lejing
 """
 import numpy as np
+import matplotlib.pyplot as plt
 
 def simulateXt_1(ts,sigma,kappa,wt,ind):
     '''
@@ -34,7 +35,7 @@ def simulateXt(rho_x, sigma1, sigma2, kappa1, kappa2, maturity,ts,wt):
     '''
     sigma22 = sigma2
     sigma21 = sigma1*rho_x
-    sigma11 = np.sqrt(sigma1**2 *(1 - rho_x*rho_x))
+    sigma11 = np.sqrt(sigma1**2 *(1. - rho_x*rho_x))
     
     dt = ts[1]-ts[0]
     x = np.asarray([0,0])
@@ -52,7 +53,8 @@ def simulateXt(rho_x, sigma1, sigma2, kappa1, kappa2, maturity,ts,wt):
         y = B.dot(integral_aa).dot(B)
         wi = np.array([wt[2][i],wt[3][i]])
         
-        x = x + (y.dot(np.ones(2))-np.diag([kappa1,kappa2]).dot(x))*dt+np.diag([sigma1,sigma2]).dot(wi)
+        #x = x + (y.dot(np.ones(2))-np.diag([kappa1,kappa2]).dot(x))*dt+np.diag([sigma1,sigma2]).dot(wi)
+        x = x + (y.dot(np.ones(2))-np.diag([kappa1,kappa2]).dot(x))*dt+np.array([[sigma11,0],[sigma21,sigma22]]).dot(wi)
         xt.append(x)
         yt.append(y)
         
@@ -71,12 +73,12 @@ def simulateOIS(rho_x, sigma1, sigma2, kappa1, kappa2, sim_freq, maturity, f0_OI
     dt = ts[1]-ts[0]
     dT = Tis[1]-Tis[0]
 
-    for i in range(ts.shape[0]):
+    for i in range(ts.shape[0]-1):
         P_OIS_t = []
         P_OIS_0_t = P_OIS[0][i]
         P_LIBOR_t = []
-        for j in np.where(Tis>=ts[i])[0]: # index for all coupon paying dates after t
-            G = np.asarray([(1.-kappa1*(Tis[j]-ts[i]))/kappa1,(1.-kappa2*(Tis[j]-ts[i]))/kappa2])
+        for j in np.where(Tis>ts[i])[0]: # index for all coupon paying dates after t
+            G = np.asarray([(1.-np.exp(-kappa1*(Tis[j]-ts[i])))/kappa1,(1.-np.exp(-kappa2*(Tis[j]-ts[i])))/kappa2])
             P_OIS_0_Ti = P_OIS[0][int((j+1)*dT/dt-1)]
             P_OIS_t_Ti = P_OIS_0_Ti/P_OIS_0_t*np.exp(-G.T.dot(xt[i])-0.5*G.T.dot(yt[i]).dot(G))
             P_OIS_t.append(P_OIS_t_Ti)
@@ -84,7 +86,9 @@ def simulateOIS(rho_x, sigma1, sigma2, kappa1, kappa2, sim_freq, maturity, f0_OI
             
         P_OIS.append(P_OIS_t)
         P_LIBOR.append(P_LIBOR_t)
-        
+    # For the last time (maturity)
+    P_OIS.append([1])
+    P_LIBOR.append([1])
         
     #print P_LIBOR
         

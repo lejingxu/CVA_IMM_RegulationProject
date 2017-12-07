@@ -73,7 +73,7 @@ swap.__str__()
 Tis = np.arange(1./freq,maturity+1e-6,1./freq)
 ts = np.arange(1./sim_freq,maturity+1e-6,1./sim_freq)
 
-num_simulation = 20
+num_simulation = 1000
 
 prices_payer=[]
 prices_receiver = []
@@ -85,6 +85,7 @@ lbdaBs = []
 lbdaCs = []
 wts = []
 
+P_OIS = []
 for num in range(num_simulation):
     # simulate correlated 4-D brownian motion
     wt = chol.dot(np.random.normal(0,1./np.sqrt(sim_freq),(4,sim_freq*maturity)))
