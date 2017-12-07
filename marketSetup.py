@@ -156,7 +156,7 @@ def simulateOIS_IMM(rho_x, sigma1, sigma2, kappa1, kappa2, sim_freq, maturity, f
     P_OIS.append([np.exp(-f0_OIS * t) for t in ts])  # calculate P_OIS(0,t) for all t
     P_LIBOR.append(
         [P_OIS[0][i] * np.exp(-spread * ts[i]) for i in range(ts.shape[0])])  # calculate P_LIBOR(0,t) for all t
-    xt, yt = simulateXt(rho_x, sigma1, sigma2, kappa1, kappa2, maturity, ts, wt)  # 120 xt's and yt's
+    xt, yt = simulateXt_IMM(rho_x, sigma1, sigma2, kappa1, kappa2, maturity, ts, wt)  # 120 xt's and yt's
 
     dt = ts[1] - ts[0]
     dT = Tis[1] - Tis[0]
