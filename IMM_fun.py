@@ -39,7 +39,8 @@ def EffectiveMaturity_old(EE, freq):
     M = np.maximum(1, np.minimum(5, (np.sum(EE_runningMax + np.sum(EE[freq:]))) / np.sum(EE_runningMax)))
     
     return M
-    
+
+
 def EffectiveMaturity(EE, freq,P_OISs):
     '''
     Calculate effective maturity
@@ -48,12 +49,12 @@ def EffectiveMaturity(EE, freq,P_OISs):
     '''
     EE_runningMax = np.maximum.accumulate(EE[:freq])
     #M = np.maximum(1, np.minimum(5, (np.sum(EE_runningMax + np.sum(EE[freq:]))) / np.sum(EE_runningMax)))
-    mean_EEE = np.average(np.multiply(EE_runningMax,P_OISs[0][:freq]))
-    mean_EE = np.average(np.multiply(EE[freq:],P_OISs[0][freq:]))
+    #print P_OISs[0][:freq]
+    mean_EEE = np.average(np.multiply(EE_runningMax,np.asarray(P_OISs[0][0][:freq])))
+    mean_EE = np.average(np.multiply(EE[freq:],P_OISs[0][0][freq:]))
     M = np.maximum(1, np.minimum(5,(mean_EEE+mean_EE)/mean_EEE))
     return M
-
-
+    
 def RegulatoryCapital_old(EAD, M, LGD, PD):
     '''
     Calculate regulatory capital

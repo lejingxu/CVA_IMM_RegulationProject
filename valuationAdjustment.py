@@ -115,8 +115,8 @@ def calculateExposure(V_df,switch_collateral,switch_downProv,collateral,D,lbdaB,
         
     if switch_downProv:
         # extract instantaneous default intensity lbda(t_i,t_(i+1))
-        lbdaB_inst = [lbdaB[i][0] for i in range(1,len(lbdaB),1)] 
-        lbdaC_inst = [lbdaC[i][0] for i in range(1,len(lbdaC),1)]              
+        lbdaB_inst = np.array([lbdaB[i][0] for i in range(1,len(lbdaB),1)]) 
+        lbdaC_inst = np.array([lbdaC[i][0] for i in range(1,len(lbdaC),1)])             
         terminationTimeB = np.where(lbdaB_inst>D)[0]
         terminationTimeC = np.where(lbdaC_inst>D)[0]
         V_downProv = np.asarray(V_df)
